@@ -1,0 +1,198 @@
+.wrapper {
+  position: relative;
+  z-index: 200;
+}
+
+/* ── Trigger button ── */
+.trigger {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s;
+  backdrop-filter: blur(4px);
+}
+
+.trigger:hover {
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.22);
+  transform: scale(1.05);
+}
+
+.triggerActive {
+  background: #ff6b35;
+  color: #fff;
+}
+
+/* ── Dropdown panel ── */
+.panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 280px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.16);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.panelTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+/* ── Section ── */
+.section {
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sectionIcon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.sectionLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+  line-height: 1.2;
+}
+
+.sectionDesc {
+  font-size: 11px;
+  color: #aaa;
+  margin-top: 1px;
+}
+
+/* Toggle button */
+.toggle {
+  margin-left: auto;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1.5px solid #ddd;
+  background: #f5f5f5;
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.18s;
+  flex-shrink: 0;
+}
+
+.toggleOn {
+  background: #ff6b35;
+  border-color: #ff6b35;
+  color: #fff;
+}
+
+/* Font size buttons */
+.fontButtons {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  justify-content: space-between;
+}
+
+.fontBtn {
+  flex: 1;
+  padding: 6px 4px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fff;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.15s;
+  line-height: 1;
+}
+
+.fontBtn:hover {
+  border-color: #ff6b35;
+  color: #ff6b35;
+}
+
+.fontBtnActive {
+  border-color: #ff6b35;
+  background: #fff0eb;
+  color: #ff6b35;
+}
+
+/* ── Blind Assist overlay ── */
+.blindOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.2s ease;
+}
+
+.blindOverlayHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.blindCloseBtn {
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.blindCloseBtn:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+.blindOverlayContent {
+  flex: 1;
+  overflow-y: auto;
+  background: #111;
+}
