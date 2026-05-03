@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import Map from './components/Map';
 import RestaurantList from './components/RestaurantList';
 import RestaurantDetail from './components/RestaurantDetail';
+import BlindAssist from './components/BlindAssist';
 import styles from './App.module.css';
 
 export default function App() {
@@ -81,10 +82,21 @@ export default function App() {
               <span className={styles.navIcon}>🗺️</span>
               <span>Map</span>
             </button>
+            <button
+              className={`${styles.navItem} ${activeTab === 'assist' ? styles.navActive : ''}`}
+              onClick={() => setActiveTab('assist')}
+            >
+              <span className={styles.navIcon}>👁️</span>
+              <span>Blind Assist</span>
+            </button>
           </nav>
 
           <div className={styles.sidebarContent}>
-            {sidebarContent()}
+            {activeTab === 'assist' ? (
+              <BlindAssist />
+            ) : (
+              sidebarContent()
+            )}
           </div>
         </aside>
 
@@ -127,6 +139,14 @@ export default function App() {
           >
             🍴 {restaurants.length > 0 ? `(${restaurants.length})` : 'List'}
           </button>
+          <button
+            role="tab"
+            aria-selected={activeTab === 'assist'}
+            className={`${styles.mobileTab} ${activeTab === 'assist' ? styles.mobileTabActive : ''}`}
+            onClick={() => setActiveTab('assist')}
+          >
+            👁️ Assist
+          </button>
         </nav>
 
         <main className={styles.mobileMain}>
@@ -158,6 +178,7 @@ export default function App() {
               onNavigate={handleNavigate}
             />
           )}
+          {activeTab === 'assist' && <BlindAssist />}
         </main>
       </div>
     </div>
