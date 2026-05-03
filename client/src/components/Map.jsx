@@ -42,7 +42,7 @@ export default function Map({
     const loader = new Loader({
       apiKey: GOOGLE_MAPS_KEY,
       version: 'weekly',
-      libraries: ['places', 'directions'],
+      libraries: ['places'],
     });
 
     loader.load().then(() => {
