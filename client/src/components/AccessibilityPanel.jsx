@@ -2,13 +2,25 @@ import React, { useState, useRef, useEffect } from 'react';
 import BlindAssist from './BlindAssist';
 import styles from './AccessibilityPanel.module.css';
 
-export default function AccessibilityPanel({ onFontScale, onHighContrast, highContrast }) {
-  const [open, setOpen] = useState(false);
-  const [blindAssistOpen, setBlindAssistOpen] = useState(false);
-  const [fontScale, setFontScale] = useState(1);
+export default function AccessibilityPanel({ onHighContrast, highContrast, onBlindAssistChange, navState }) {
+  const [open, setOpen]                   = useState(false);
+  const [blindAssistOn, setBlindAssistOn] = useState(false);
+  const [fontScale, setFontScale] = useState('normal');
+  const [showOverlay, setShowOverlay]     = useState(false);
   const panelRef = useRef(null);
 
-  // Close panel when clicking outside
+  const isNavigating = !!navState; // only allow blind assist during navigation
+
+  // If navigation ends while blind assist is on, close it
+  useEffect(() => {
+    if (!isNavigating && blindAssistOn) {
+      setBlindAssistOn(false);
+      setShowOverlay(false);
+      onBlindAssistChange?.(false);
+    }
+  }, [isNavigating]);
+
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handler = (e) => {
       if (panelRef.current && !panelRef.current.contains(e.target)) {
@@ -19,22 +31,39 @@ export default function AccessibilityPanel({ onFontScale, onHighContrast, highCo
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
-  const handleFontScale = (scale) => {
-    setFontScale(scale);
-    onFontScale?.(scale);
-    document.documentElement.style.fontSize = `${scale * 16}px`;
+  const toggleBlindAssist = () => {
+    if (!isNavigating) return; // guard
+    const next = !blindAssistOn;
+    setBlindAssistOn(next);
+    onBlindAssistChange?.(next);
+    if (next) setShowOverlay(true);
+    setOpen(false);
   };
 
-  const handleHighContrast = () => {
-    onHighContrast?.(!highContrast);
+  const closeOverlay = () => {
+    setShowOverlay(false);
+    setBlindAssistOn(false);
+    onBlindAssistChange?.(false);
+  };
+
+  const FONT_SCALES = [
+    { scale: 'small',  label: 'A', size: 12, aria: 'Small' },
+    { scale: 'normal', label: 'A', size: 15, aria: 'Normal' },
+    { scale: 'large',  label: 'A', size: 18, aria: 'Large' },
+    { scale: 'xl',     label: 'A', size: 22, aria: 'Extra Large' },
+  ];
+
+  const handleFontScale = (scale) => {
+    setFontScale(scale);
+    document.body.setAttribute('data-font-scale', scale);
   };
 
   return (
     <>
-      {/* Floating trigger button */}
       <div className={styles.wrapper} ref={panelRef}>
+        {/* Trigger */}
         <button
-          className={`${styles.trigger} ${open ? styles.triggerActive : ''}`}
+          className={`${styles.trigger} ${open ? styles.triggerActive : ''} ${blindAssistOn ? styles.triggerEnabled : ''}`}
           onClick={() => setOpen(!open)}
           aria-label="Accessibility options"
           aria-expanded={open}
@@ -43,13 +72,9 @@ export default function AccessibilityPanel({ onFontScale, onHighContrast, highCo
           ♿
         </button>
 
-        {/* Dropdown panel */}
+        {/* Dropdown */}
         {open && (
-          <div
-            className={styles.panel}
-            role="dialog"
-            aria-label="Accessibility settings"
-          >
+          <div className={styles.panel} role="dialog" aria-label="Accessibility settings">
             <h3 className={styles.panelTitle}>Accessibility</h3>
 
             {/* Blind Assist */}
@@ -58,19 +83,25 @@ export default function AccessibilityPanel({ onFontScale, onHighContrast, highCo
                 <span className={styles.sectionIcon}>👁️</span>
                 <div>
                   <p className={styles.sectionLabel}>Blind Assist</p>
-                  <p className={styles.sectionDesc}>AI obstacle detection via camera</p>
+                  <p className={styles.sectionDesc}>
+                    {isNavigating
+                      ? 'AI obstacle detection via camera'
+                      : 'Start navigation first to use'}
+                  </p>
                 </div>
                 <button
-                  className={`${styles.toggle} ${blindAssistOpen ? styles.toggleOn : ''}`}
-                  onClick={() => {
-                    setBlindAssistOpen(!blindAssistOpen);
-                    setOpen(false);
-                  }}
-                  aria-pressed={blindAssistOpen}
+                  className={`${styles.toggle} ${blindAssistOn ? styles.toggleOn : ''} ${!isNavigating ? styles.toggleDisabled : ''}`}
+                  onClick={toggleBlindAssist}
+                  disabled={!isNavigating}
+                  aria-pressed={blindAssistOn}
+                  aria-disabled={!isNavigating}
                 >
-                  {blindAssistOpen ? 'On' : 'Off'}
+                  {blindAssistOn ? 'On' : 'Off'}
                 </button>
               </div>
+              {!isNavigating && (
+                <p className={styles.disabledHint}>🧭 Navigate to a restaurant to use</p>
+              )}
             </div>
 
             {/* High contrast */}
@@ -83,7 +114,7 @@ export default function AccessibilityPanel({ onFontScale, onHighContrast, highCo
                 </div>
                 <button
                   className={`${styles.toggle} ${highContrast ? styles.toggleOn : ''}`}
-                  onClick={handleHighContrast}
+                  onClick={() => onHighContrast?.(!highContrast)}
                   aria-pressed={highContrast}
                 >
                   {highContrast ? 'On' : 'Off'}
@@ -95,24 +126,17 @@ export default function AccessibilityPanel({ onFontScale, onHighContrast, highCo
             <div className={styles.section}>
               <div className={styles.sectionHeader}>
                 <span className={styles.sectionIcon}>🔤</span>
-                <div>
-                  <p className={styles.sectionLabel}>Text Size</p>
-                </div>
+                <div><p className={styles.sectionLabel}>Text Size</p></div>
               </div>
               <div className={styles.fontButtons}>
-                {[
-                  { scale: 0.875, label: 'A', size: 13 },
-                  { scale: 1,     label: 'A', size: 16 },
-                  { scale: 1.25,  label: 'A', size: 20 },
-                  { scale: 1.5,   label: 'A', size: 24 },
-                ].map(({ scale, label, size }) => (
+                {FONT_SCALES.map(({ scale, label, size, aria }) => (
                   <button
                     key={scale}
                     className={`${styles.fontBtn} ${fontScale === scale ? styles.fontBtnActive : ''}`}
                     style={{ fontSize: size }}
                     onClick={() => handleFontScale(scale)}
                     aria-pressed={fontScale === scale}
-                    aria-label={`Set text size to ${Math.round(scale * 100)}%`}
+                    aria-label={`Text size: ${aria}`}
                   >
                     {label}
                   </button>
@@ -123,21 +147,15 @@ export default function AccessibilityPanel({ onFontScale, onHighContrast, highCo
         )}
       </div>
 
-      {/* Blind Assist overlay — shown on top of everything when active */}
-      {blindAssistOpen && (
+      {/* Full-screen Blind Assist overlay — passes navState for step display */}
+      {showOverlay && (
         <div className={styles.blindOverlay} role="dialog" aria-label="Blind assist active">
           <div className={styles.blindOverlayHeader}>
-            <span>👁️ Blind Assist Active</span>
-            <button
-              className={styles.blindCloseBtn}
-              onClick={() => setBlindAssistOpen(false)}
-              aria-label="Close blind assist"
-            >
-              ✕
-            </button>
+            <span>👁️ Blind Assist</span>
+            <button className={styles.blindCloseBtn} onClick={closeOverlay} aria-label="Close blind assist">✕</button>
           </div>
           <div className={styles.blindOverlayContent}>
-            <BlindAssist />
+            <BlindAssist navState={navState} />
           </div>
         </div>
       )}

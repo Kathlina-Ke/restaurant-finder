@@ -8,7 +8,7 @@ const TRAVEL_MODES = [
   { value: 'BICYCLING', label: '🚲 Bike' },
 ];
 
-export default function Navigation({ map, userLocation, destination, destinationName, onClose }) {
+export default function Navigation({ map, userLocation, destination, destinationName, onClose, onNavStateChange }) {
   const directionsRendererRef = useRef(null);
   const [travelMode, setTravelMode] = useState('WALKING');
   const [steps, setSteps]           = useState([]);
@@ -16,7 +16,6 @@ export default function Navigation({ map, userLocation, destination, destination
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState(null);
   const [currentStep, setCurrentStep] = useState(0);
-  const speechRef = useRef(null);
 
   // Init DirectionsRenderer once
   useEffect(() => {
@@ -54,19 +53,25 @@ export default function Navigation({ map, userLocation, destination, destination
         if (status === 'OK') {
           directionsRendererRef.current?.setDirections(result);
           const leg = result.routes[0].legs[0];
-          setSummary({
+          const newSummary = {
             distance: leg.distance.text,
             duration: leg.duration.text,
+          };
+          const newSteps = leg.steps.map((s) => ({
+            instruction: s.instructions.replace(/<[^>]*>/g, ''),
+            distance: s.distance.text,
+            duration: s.duration.text,
+            maneuver: s.maneuver || '',
+          }));
+          setSummary(newSummary);
+          setSteps(newSteps);
+          // Notify parent of nav state
+          onNavStateChange?.({
+            steps: newSteps,
+            currentStep: 0,
+            summary: newSummary,
+            destinationName,
           });
-          // Strip HTML tags from step instructions
-          setSteps(
-            leg.steps.map((s) => ({
-              instruction: s.instructions.replace(/<[^>]*>/g, ''),
-              distance: s.distance.text,
-              duration: s.duration.text,
-              maneuver: s.maneuver || '',
-            }))
-          );
         } else {
           setError(`Could not find a route (${status}). Try a different travel mode.`);
         }
@@ -91,6 +96,7 @@ export default function Navigation({ map, userLocation, destination, destination
   const goToStep = (index) => {
     setCurrentStep(index);
     speakStep(steps[index]?.instruction);
+    onNavStateChange?.({ steps, currentStep: index, summary, destinationName });
   };
 
   const maneuverIcon = (maneuver) => {

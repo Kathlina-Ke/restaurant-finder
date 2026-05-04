@@ -107,8 +107,8 @@ export default function RestaurantDetail({ restaurant, userLocation, onBack, onN
 function Section({ title, children }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <h3 style={{ fontSize: 14, fontWeight: 600, color: '#555', marginBottom: 6 }}>{title}</h3>
-      <div style={{ fontSize: 14, color: '#333', lineHeight: 1.6 }}>{children}</div>
+      <h3 style={{ fontSize: 'var(--fs-xs)', fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{title}</h3>
+      <div style={{ fontSize: 'var(--fs-md)', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{children}</div>
     </div>
   );
 }

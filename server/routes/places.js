@@ -5,7 +5,23 @@ const router = express.Router();
 const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 const PLACES_BASE = 'https://maps.googleapis.com/maps/api/place';
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const mapPlace = (place) => ({
+  id: place.place_id,
+  name: place.name,
+  rating: place.rating,
+  userRatingsTotal: place.user_ratings_total,
+  priceLevel: place.price_level,
+  vicinity: place.vicinity,
+  location: place.geometry.location,
+  openNow: place.opening_hours?.open_now,
+  photo: place.photos?.[0]?.photo_reference || null,
+  types: place.types,
+});
+
 // GET /api/places/nearby?lat=...&lng=...&radius=1500
+// Fetches all pages automatically (up to 60 results — Google's hard limit)
 router.get('/nearby', async (req, res) => {
   const { lat, lng, radius = 1500 } = req.query;
 
@@ -14,29 +30,30 @@ router.get('/nearby', async (req, res) => {
   }
 
   try {
-    const response = await axios.get(`${PLACES_BASE}/nearbysearch/json`, {
-      params: {
+    let allResults = [];
+    let pageToken = null;
+
+    do {
+      const params = {
         location: `${lat},${lng}`,
         radius,
         type: 'restaurant',
         key: GOOGLE_API_KEY,
-      },
-    });
+      };
+      if (pageToken) params.pagetoken = pageToken;
 
-    const restaurants = response.data.results.map((place) => ({
-      id: place.place_id,
-      name: place.name,
-      rating: place.rating,
-      userRatingsTotal: place.user_ratings_total,
-      priceLevel: place.price_level,       // 0-4, $ to $$$$
-      vicinity: place.vicinity,
-      location: place.geometry.location,
-      openNow: place.opening_hours?.open_now,
-      photo: place.photos?.[0]?.photo_reference || null,
-      types: place.types,
-    }));
+      const response = await axios.get(`${PLACES_BASE}/nearbysearch/json`, { params });
+      const data = response.data;
 
-    res.json({ restaurants });
+      allResults = allResults.concat(data.results.map(mapPlace));
+      pageToken = data.next_page_token || null;
+
+      // Google requires ~2s before next_page_token becomes valid
+      if (pageToken) await delay(2000);
+
+    } while (pageToken);
+
+    res.json({ restaurants: allResults, total: allResults.length });
   } catch (err) {
     console.error('Places nearby error:', err.message);
     res.status(500).json({ error: 'Failed to fetch nearby restaurants' });
@@ -63,7 +80,6 @@ router.get('/details/:placeId', async (req, res) => {
           'geometry',
           'photos',
           'types',
-          'parking',
         ].join(','),
         key: GOOGLE_API_KEY,
       },
@@ -71,7 +87,6 @@ router.get('/details/:placeId', async (req, res) => {
 
     const p = response.data.result;
 
-    // Determine parking availability from types
     const hasParking =
       p.types?.includes('parking') ||
       p.types?.includes('car_parking') ||

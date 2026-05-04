@@ -1,45 +1,39 @@
-.wrapper {
-  position: relative;
-  z-index: 200;
-}
+.wrapper { position: relative; z-index: 200; }
 
-/* ── Trigger button ── */
 .trigger {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: none;
-  background: rgba(255,255,255,0.95);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  border: 2px solid transparent;
+  background: var(--bg-2);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
   font-size: 18px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.18s;
-  backdrop-filter: blur(4px);
+  color: var(--text-primary);
 }
 
 .trigger:hover {
-  background: #fff;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.22);
+  background: var(--bg-3);
+  box-shadow: 0 3px 12px rgba(0,0,0,0.5);
   transform: scale(1.05);
 }
 
-.triggerActive {
-  background: #ff6b35;
-  color: #fff;
-}
+.triggerActive  { background: var(--accent); color: #fff; border-color: var(--accent); }
+.triggerEnabled { background: var(--bg-3); border-color: var(--accent); }
 
-/* ── Dropdown panel ── */
 .panel {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
   width: 280px;
-  background: #fff;
+  background: var(--bg-2);
+  border: 1px solid var(--border-strong);
   border-radius: 14px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.16);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -53,71 +47,52 @@
 }
 
 .panelTitle {
-  font-size: 13px;
+  font-size: var(--fs-xs);
   font-weight: 700;
-  color: #aaa;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
 }
 
-/* ── Section ── */
 .section {
   padding: 10px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border);
 }
 
-.section:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
+.section:last-child { border-bottom: none; padding-bottom: 0; }
 
-.sectionHeader {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+.sectionHeader { display: flex; align-items: center; gap: 10px; }
+.sectionIcon   { font-size: 20px; flex-shrink: 0; }
+.sectionLabel  { font-size: var(--fs-md); font-weight: 600; color: var(--text-primary); line-height: 1.2; }
+.sectionDesc   { font-size: var(--fs-xs); color: var(--text-muted); margin-top: 1px; }
 
-.sectionIcon {
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.sectionLabel {
-  font-size: 14px;
-  font-weight: 600;
-  color: #222;
-  line-height: 1.2;
-}
-
-.sectionDesc {
-  font-size: 11px;
-  color: #aaa;
-  margin-top: 1px;
-}
-
-/* Toggle button */
 .toggle {
   margin-left: auto;
   padding: 5px 12px;
   border-radius: 20px;
-  border: 1.5px solid #ddd;
-  background: #f5f5f5;
-  font-size: 12px;
+  border: 1.5px solid var(--border-strong);
+  background: var(--bg-3);
+  font-size: var(--fs-xs);
   font-weight: 600;
-  color: #888;
+  color: var(--text-muted);
   cursor: pointer;
   transition: all 0.18s;
   flex-shrink: 0;
+  font-family: inherit;
 }
 
-.toggleOn {
-  background: #ff6b35;
-  border-color: #ff6b35;
-  color: #fff;
+.toggleOn { background: var(--accent); border-color: var(--accent); color: #fff; }
+.toggleDisabled { opacity: 0.35; cursor: not-allowed; }
+
+.disabledHint {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin-top: 6px;
+  padding-left: 30px;
+  font-style: italic;
 }
 
-/* Font size buttons */
 .fontButtons {
   display: flex;
   gap: 6px;
@@ -128,33 +103,26 @@
 .fontBtn {
   flex: 1;
   padding: 6px 4px;
-  border: 1.5px solid #e0e0e0;
+  border: 1.5px solid var(--border-strong);
   border-radius: 8px;
-  background: #fff;
+  background: var(--bg-3);
   font-weight: 600;
-  color: #555;
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.15s;
   line-height: 1;
+  font-family: inherit;
 }
 
-.fontBtn:hover {
-  border-color: #ff6b35;
-  color: #ff6b35;
-}
-
-.fontBtnActive {
-  border-color: #ff6b35;
-  background: #fff0eb;
-  color: #ff6b35;
-}
+.fontBtn:hover  { border-color: var(--accent); color: var(--accent); }
+.fontBtnActive  { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
 
 /* ── Blind Assist overlay ── */
 .blindOverlay {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(0,0,0,0.85);
+  background: #000;
   display: flex;
   flex-direction: column;
   animation: fadeIn 0.2s ease;
@@ -165,17 +133,18 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 20px;
-  background: #1a1a1a;
-  color: #fff;
-  font-size: 15px;
+  background: var(--bg-2);
+  color: var(--text-primary);
+  font-size: var(--fs-lg);
   font-weight: 600;
   flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
 }
 
 .blindCloseBtn {
-  background: rgba(255,255,255,0.15);
+  background: var(--bg-4);
   border: none;
-  color: #fff;
+  color: var(--text-primary);
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -187,12 +156,6 @@
   transition: background 0.15s;
 }
 
-.blindCloseBtn:hover {
-  background: rgba(255,255,255,0.25);
-}
+.blindCloseBtn:hover { background: var(--bg-3); }
 
-.blindOverlayContent {
-  flex: 1;
-  overflow-y: auto;
-  background: #111;
-}
+.blindOverlayContent { flex: 1; overflow-y: auto; }

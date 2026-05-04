@@ -15,9 +15,9 @@ export default function Map({
   loading,
   setLoading,
   desktopMode,
-  // Navigation can also be triggered from RestaurantDetail
-  navigationTarget,   // { location, name } | null
+  navigationTarget,
   onClearNavigation,
+  onNavStateChange,
 }) {
   const mapRef          = useRef(null);
   const mapInstanceRef  = useRef(null);
@@ -28,6 +28,8 @@ export default function Map({
   const [radius, setRadius]         = useState(1500);
   const [mapReady, setMapReady]     = useState(false);
   const [highContrast, setHighContrast] = useState(false);
+  const [navState, setNavState]     = useState(null);
+  const [blindAssistOn, setBlindAssistOn] = useState(false);
 
   // Internal nav state (can be set from map marker click too)
   const [navTarget, setNavTarget]   = useState(null);
@@ -181,6 +183,7 @@ export default function Map({
 
   const closeNavigation = () => {
     setNavTarget(null);
+    setNavState(null);
     onClearNavigation?.();
   };
 
@@ -223,11 +226,13 @@ export default function Map({
           <AccessibilityPanel
             highContrast={highContrast}
             onHighContrast={setHighContrast}
+            navState={navState}
+            onBlindAssistChange={setBlindAssistOn}
           />
         </div>
 
-        {/* Navigation panel — slides up from bottom of map */}
-        {navTarget && mapReady && (
+        {/* Navigation panel — hidden while Blind Assist overlay is open */}
+        {navTarget && mapReady && !blindAssistOn && (
           <div className={styles.navPanel}>
             <Navigation
               map={mapInstanceRef.current}
@@ -235,6 +240,7 @@ export default function Map({
               destination={navTarget.location}
               destinationName={navTarget.name}
               onClose={closeNavigation}
+              onNavStateChange={setNavState}
             />
           </div>
         )}
