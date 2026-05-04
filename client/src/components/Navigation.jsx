@@ -24,9 +24,9 @@ export default function Navigation({ map, userLocation, destination, destination
       map,
       suppressMarkers: false,
       polylineOptions: {
-        strokeColor: '#ff6b35',
+        strokeColor: '#6366f1',
         strokeWeight: 5,
-        strokeOpacity: 0.85,
+        strokeOpacity: 0.9,
       },
     });
     return () => {
@@ -62,6 +62,10 @@ export default function Navigation({ map, userLocation, destination, destination
             distance: s.distance.text,
             duration: s.duration.text,
             maneuver: s.maneuver || '',
+            // end_location is a LatLng object from Google Maps API
+            endLocation: s.end_location
+              ? { lat: s.end_location.lat(), lng: s.end_location.lng() }
+              : null,
           }));
           setSummary(newSummary);
           setSteps(newSteps);
