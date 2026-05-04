@@ -58,6 +58,7 @@ export default function App() {
   const mapProps = {
     onRestaurantsFound: handleRestaurantsFound,
     onSelectRestaurant: handleSelectRestaurant,
+    onUserLocationUpdate: setUserLocation,
     restaurants,
     userLocation,
     loading,

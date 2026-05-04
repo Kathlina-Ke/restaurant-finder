@@ -8,7 +8,7 @@ import styles from './Map.module.css';
 const GOOGLE_MAPS_KEY = 'AIzaSyDn4_Ty8eOo6p5ZXWPyd8NmCp0b_IXzpoc';
 
 export default function Map({
-  onRestaurantsFound, onSelectRestaurant,
+  onRestaurantsFound, onSelectRestaurant, onUserLocationUpdate,
   restaurants, userLocation,
   loading, setLoading,
   desktopMode, navigationTarget, onClearNavigation, onNavStateChange,
@@ -18,6 +18,10 @@ export default function Map({
   const mapInstanceRef  = useRef(null);
   const markersRef      = useRef([]);
   const userMarkerRef   = useRef(null);
+  const userLocationRef = useRef(userLocation); // always holds latest value for closures
+
+  // Keep ref in sync
+  useEffect(() => { userLocationRef.current = userLocation; }, [userLocation]);
 
   const [error, setError]           = useState(null);
   const [radius, setRadius]         = useState(1500);
@@ -115,11 +119,7 @@ export default function Map({
           <div style="max-width:200px;font-family:sans-serif">
             <strong style="font-size:14px">${r.name}</strong><br/>
             ⭐ ${r.rating ?? 'N/A'} · ${getPriceLabel(r.priceLevel)}<br/>
-            ${r.openNow ? '🟢 Open now' : '🔴 Closed'}<br/>
-            <button
-              onclick="window.__navigateTo('${r.id}','${r.name.replace(/'/g, "\\'")}',${r.location.lat},${r.location.lng})"
-              style="margin-top:8px;padding:5px 12px;background:#ff6b35;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600"
-            >🧭 Navigate</button>
+            ${r.openNow ? '🟢 Open now' : '🔴 Closed'}
           </div>
         `,
       });
@@ -134,7 +134,20 @@ export default function Map({
 
     // Global callback for the Navigate button inside InfoWindow HTML
     window.__navigateTo = (id, name, lat, lng) => {
-      setNavTarget({ location: { lat: parseFloat(lat), lng: parseFloat(lng) }, name });
+      const target = { location: { lat: parseFloat(lat), lng: parseFloat(lng) }, name };
+      setNavTarget(target);
+
+      // If we don't have the user's location yet, fetch it now so Navigation can route
+      if (!userLocationRef.current && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            placeUserMarker(loc);
+            onUserLocationUpdate?.(loc);
+          },
+          () => {}
+        );
+      }
     };
   }, [restaurants, onSelectRestaurant]);
 
