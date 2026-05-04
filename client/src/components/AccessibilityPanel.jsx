@@ -2,16 +2,26 @@ import React, { useState, useRef, useEffect } from 'react';
 import BlindAssist from './BlindAssist';
 import styles from './AccessibilityPanel.module.css';
 
-export default function AccessibilityPanel({ onHighContrast, highContrast, onBlindAssistChange, navState }) {
-  const [open, setOpen]                   = useState(false);
+const COMMON_ALLERGENS = [
+  'Peanuts', 'Tree nuts', 'Milk', 'Eggs', 'Wheat', 'Gluten',
+  'Soy', 'Fish', 'Shellfish', 'Sesame',
+];
+
+export default function AccessibilityPanel({
+  onHighContrast, highContrast,
+  onBlindAssistChange, navState,
+  allergens, onAddAllergen, onRemoveAllergen,
+}) {
+  const [open, setOpen]               = useState(false);
   const [blindAssistOn, setBlindAssistOn] = useState(false);
-  const [fontScale, setFontScale] = useState('normal');
-  const [showOverlay, setShowOverlay]     = useState(false);
-  const panelRef = useRef(null);
+  const [fontScale, setFontScale]     = useState('normal');
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [allergyInput, setAllergyInput] = useState('');
+  const panelRef  = useRef(null);
+  const inputRef  = useRef(null);
 
-  const isNavigating = !!navState; // only allow blind assist during navigation
+  const isNavigating = !!navState;
 
-  // If navigation ends while blind assist is on, close it
   useEffect(() => {
     if (!isNavigating && blindAssistOn) {
       setBlindAssistOn(false);
@@ -20,19 +30,16 @@ export default function AccessibilityPanel({ onHighContrast, highContrast, onBli
     }
   }, [isNavigating]);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handler = (e) => {
-      if (panelRef.current && !panelRef.current.contains(e.target)) {
-        setOpen(false);
-      }
+      if (panelRef.current && !panelRef.current.contains(e.target)) setOpen(false);
     };
     if (open) document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
   const toggleBlindAssist = () => {
-    if (!isNavigating) return; // guard
+    if (!isNavigating) return;
     const next = !blindAssistOn;
     setBlindAssistOn(next);
     onBlindAssistChange?.(next);
@@ -47,15 +54,23 @@ export default function AccessibilityPanel({ onHighContrast, highContrast, onBli
   };
 
   const FONT_SCALES = [
-    { scale: 'small',  label: 'A', size: 12, aria: 'Small' },
-    { scale: 'normal', label: 'A', size: 15, aria: 'Normal' },
-    { scale: 'large',  label: 'A', size: 18, aria: 'Large' },
-    { scale: 'xl',     label: 'A', size: 22, aria: 'Extra Large' },
+    { scale: 'small',  size: 12, aria: 'Small' },
+    { scale: 'normal', size: 15, aria: 'Normal' },
+    { scale: 'large',  size: 18, aria: 'Large' },
+    { scale: 'xl',     size: 22, aria: 'Extra Large' },
   ];
 
   const handleFontScale = (scale) => {
     setFontScale(scale);
     document.body.setAttribute('data-font-scale', scale);
+  };
+
+  const handleAllergySubmit = (e) => {
+    e.preventDefault();
+    if (allergyInput.trim()) {
+      onAddAllergen(allergyInput.trim());
+      setAllergyInput('');
+    }
   };
 
   return (
@@ -70,6 +85,9 @@ export default function AccessibilityPanel({ onHighContrast, highContrast, onBli
           aria-haspopup="dialog"
         >
           ♿
+          {allergens?.length > 0 && (
+            <span className={styles.allergyDot} aria-label={`${allergens.length} allergens set`} />
+          )}
         </button>
 
         {/* Dropdown */}
@@ -77,16 +95,14 @@ export default function AccessibilityPanel({ onHighContrast, highContrast, onBli
           <div className={styles.panel} role="dialog" aria-label="Accessibility settings">
             <h3 className={styles.panelTitle}>Accessibility</h3>
 
-            {/* Blind Assist */}
+            {/* ── Blind Assist ── */}
             <div className={styles.section}>
               <div className={styles.sectionHeader}>
                 <span className={styles.sectionIcon}>👁️</span>
                 <div>
                   <p className={styles.sectionLabel}>Blind Assist</p>
                   <p className={styles.sectionDesc}>
-                    {isNavigating
-                      ? 'AI obstacle detection via camera'
-                      : 'Start navigation first to use'}
+                    {isNavigating ? 'AI obstacle detection via camera' : 'Start navigation first to use'}
                   </p>
                 </div>
                 <button
@@ -94,7 +110,6 @@ export default function AccessibilityPanel({ onHighContrast, highContrast, onBli
                   onClick={toggleBlindAssist}
                   disabled={!isNavigating}
                   aria-pressed={blindAssistOn}
-                  aria-disabled={!isNavigating}
                 >
                   {blindAssistOn ? 'On' : 'Off'}
                 </button>
@@ -104,7 +119,72 @@ export default function AccessibilityPanel({ onHighContrast, highContrast, onBli
               )}
             </div>
 
-            {/* High contrast */}
+            {/* ── Allergies ── */}
+            <div className={styles.section}>
+              <div className={styles.sectionHeader}>
+                <span className={styles.sectionIcon}>🚨</span>
+                <div>
+                  <p className={styles.sectionLabel}>Allergies</p>
+                  <p className={styles.sectionDesc}>Warn me on restaurant cards</p>
+                </div>
+              </div>
+
+              {/* Quick-add common allergens */}
+              <div className={styles.allergenQuick}>
+                {COMMON_ALLERGENS.map((a) => {
+                  const key = a.toLowerCase();
+                  const active = allergens?.includes(key);
+                  return (
+                    <button
+                      key={a}
+                      className={`${styles.allergenChip} ${active ? styles.allergenChipActive : ''}`}
+                      onClick={() => active ? onRemoveAllergen(key) : onAddAllergen(a)}
+                      aria-pressed={active}
+                    >
+                      {a}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Custom input */}
+              <form className={styles.allergenForm} onSubmit={handleAllergySubmit}>
+                <input
+                  ref={inputRef}
+                  className={styles.allergenInput}
+                  value={allergyInput}
+                  onChange={(e) => setAllergyInput(e.target.value)}
+                  placeholder="Add custom allergen…"
+                  aria-label="Add custom allergen"
+                />
+                <button
+                  type="submit"
+                  className={styles.allergenAddBtn}
+                  disabled={!allergyInput.trim()}
+                  aria-label="Add allergen"
+                >
+                  +
+                </button>
+              </form>
+
+              {/* Active allergens */}
+              {allergens?.length > 0 && (
+                <div className={styles.allergenActive}>
+                  {allergens.map((a) => (
+                    <span key={a} className={styles.allergenTag}>
+                      {a}
+                      <button
+                        className={styles.allergenRemove}
+                        onClick={() => onRemoveAllergen(a)}
+                        aria-label={`Remove ${a}`}
+                      >×</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* ── High Contrast ── */}
             <div className={styles.section}>
               <div className={styles.sectionHeader}>
                 <span className={styles.sectionIcon}>🌗</span>
@@ -122,14 +202,14 @@ export default function AccessibilityPanel({ onHighContrast, highContrast, onBli
               </div>
             </div>
 
-            {/* Font size */}
+            {/* ── Text Size ── */}
             <div className={styles.section}>
               <div className={styles.sectionHeader}>
                 <span className={styles.sectionIcon}>🔤</span>
                 <div><p className={styles.sectionLabel}>Text Size</p></div>
               </div>
               <div className={styles.fontButtons}>
-                {FONT_SCALES.map(({ scale, label, size, aria }) => (
+                {FONT_SCALES.map(({ scale, size, aria }) => (
                   <button
                     key={scale}
                     className={`${styles.fontBtn} ${fontScale === scale ? styles.fontBtnActive : ''}`}
@@ -138,7 +218,7 @@ export default function AccessibilityPanel({ onHighContrast, highContrast, onBli
                     aria-pressed={fontScale === scale}
                     aria-label={`Text size: ${aria}`}
                   >
-                    {label}
+                    A
                   </button>
                 ))}
               </div>
@@ -147,7 +227,7 @@ export default function AccessibilityPanel({ onHighContrast, highContrast, onBli
         )}
       </div>
 
-      {/* Full-screen Blind Assist overlay — passes navState for step display */}
+      {/* Blind Assist overlay */}
       {showOverlay && (
         <div className={styles.blindOverlay} role="dialog" aria-label="Blind assist active">
           <div className={styles.blindOverlayHeader}>

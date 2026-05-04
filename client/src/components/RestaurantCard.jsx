@@ -1,24 +1,15 @@
 import React from 'react';
+import AllergyWarning from './AllergyWarning';
 import styles from './RestaurantCard.module.css';
 
 const PRICE_LABELS = ['Free', '$', '$$', '$$$', '$$$$'];
-const BUSY_COLORS = { low: '#4caf50', medium: '#ff9800', high: '#f44336' };
 
-export default function RestaurantCard({ restaurant, userLocation, onClick }) {
-  const {
-    name,
-    rating,
-    userRatingsTotal,
-    priceLevel,
-    vicinity,
-    openNow,
-    types,
-    location,
-  } = restaurant;
+export default function RestaurantCard({ restaurant, userLocation, onClick, allergens }) {
+  const { name, rating, userRatingsTotal, priceLevel, vicinity, openNow, types, location } = restaurant;
 
   const distance = userLocation ? formatDistance(getDistance(userLocation, location)) : null;
-  const cuisine = getCuisine(types);
-  const price = priceLevel != null ? PRICE_LABELS[priceLevel] : 'N/A';
+  const cuisine  = getCuisine(types);
+  const price    = priceLevel != null ? PRICE_LABELS[priceLevel] : 'N/A';
 
   return (
     <button
@@ -43,6 +34,10 @@ export default function RestaurantCard({ restaurant, userLocation, onClick }) {
           )}
           <span className={styles.price}>{price}</span>
           {cuisine && <span className={styles.cuisine}>{cuisine}</span>}
+          {/* Allergy warning — only renders if allergens are set and risk > none */}
+          {allergens?.length > 0 && (
+            <AllergyWarning cuisineTypes={types} allergens={allergens} />
+          )}
         </div>
 
         <div className={styles.footer}>
@@ -57,24 +52,22 @@ export default function RestaurantCard({ restaurant, userLocation, onClick }) {
 
 function getCuisine(types = []) {
   const map = {
-    japanese_restaurant: '🍣 Japanese',
-    chinese_restaurant: '🥢 Chinese',
-    italian_restaurant: '🍝 Italian',
-    mexican_restaurant: '🌮 Mexican',
-    indian_restaurant: '🍛 Indian',
-    thai_restaurant: '🍜 Thai',
-    american_restaurant: '🍔 American',
-    pizza_restaurant: '🍕 Pizza',
-    seafood_restaurant: '🦞 Seafood',
-    vegetarian_restaurant: '🥗 Vegetarian',
+    japanese_restaurant:  '🍣 Japanese',
+    chinese_restaurant:   '🥢 Chinese',
+    italian_restaurant:   '🍝 Italian',
+    mexican_restaurant:   '🌮 Mexican',
+    indian_restaurant:    '🍛 Indian',
+    thai_restaurant:      '🍜 Thai',
+    american_restaurant:  '🍔 American',
+    pizza_restaurant:     '🍕 Pizza',
+    seafood_restaurant:   '🦞 Seafood',
+    vegetarian_restaurant:'🥗 Vegetarian',
     fast_food_restaurant: '🍟 Fast Food',
-    cafe: '☕ Café',
-    bakery: '🥐 Bakery',
-    bar: '🍺 Bar',
+    cafe:                 '☕ Café',
+    bakery:               '🥐 Bakery',
+    bar:                  '🍺 Bar',
   };
-  for (const t of types) {
-    if (map[t]) return map[t];
-  }
+  for (const t of types) { if (map[t]) return map[t]; }
   return '🍽️ Restaurant';
 }
 
