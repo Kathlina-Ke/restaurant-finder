@@ -24,7 +24,7 @@ const CUISINE_TAGS = [
   { value: 'ramen',       label: '🍜 Ramen',      keywords: ['ramen', 'noodle'] },
 ];
 
-export default function RestaurantList({ restaurants, userLocation, onSelect, onSearchMap }) {
+export default function RestaurantList({ restaurants, userLocation, onSelect, onSearchMap, allergens }) {
   const [sortBy, setSortBy]           = useState('rating');
   const [filterOpen, setFilterOpen]   = useState(false);
   const [filterParking, setFilterParking] = useState(false);
@@ -192,6 +192,7 @@ export default function RestaurantList({ restaurants, userLocation, onSelect, on
                 restaurant={r}
                 userLocation={userLocation}
                 onClick={() => onSelect(r)}
+                allergens={allergens}
               />
             </li>
           ))}

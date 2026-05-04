@@ -117,6 +117,127 @@
 .fontBtn:hover  { border-color: var(--accent); color: var(--accent); }
 .fontBtnActive  { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
 
+/* ── Allergen dot on trigger ── */
+.allergyDot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f87171;
+  border: 2px solid var(--bg-2);
+}
+
+/* ── Allergen quick chips ── */
+.allergenQuick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.allergenChip {
+  padding: 3px 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  background: var(--bg-3);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.allergenChip:hover { border-color: #f87171; color: #f87171; }
+
+.allergenChipActive {
+  background: rgba(248,113,113,0.15);
+  border-color: #f87171;
+  color: #f87171;
+  font-weight: 600;
+}
+
+/* ── Custom input ── */
+.allergenForm {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.allergenInput {
+  flex: 1;
+  padding: 6px 10px;
+  background: var(--bg-3);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: var(--fs-xs);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.allergenInput:focus { border-color: var(--accent); }
+.allergenInput::placeholder { color: var(--text-muted); }
+
+.allergenAddBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  line-height: 1;
+}
+
+.allergenAddBtn:hover:not(:disabled) { background: var(--accent-hover); }
+.allergenAddBtn:disabled { background: var(--bg-4); cursor: not-allowed; }
+
+/* ── Active allergen tags ── */
+.allergenActive {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.allergenTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: rgba(248,113,113,0.12);
+  border: 1px solid rgba(248,113,113,0.3);
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #f87171;
+}
+
+.allergenRemove {
+  background: none;
+  border: none;
+  color: #f87171;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.allergenRemove:hover { opacity: 1; }
+
 /* ── Blind Assist overlay ── */
 .blindOverlay {
   position: fixed;

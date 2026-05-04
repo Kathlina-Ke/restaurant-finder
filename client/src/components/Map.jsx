@@ -8,16 +8,11 @@ import styles from './Map.module.css';
 const GOOGLE_MAPS_KEY = 'AIzaSyDn4_Ty8eOo6p5ZXWPyd8NmCp0b_IXzpoc';
 
 export default function Map({
-  onRestaurantsFound,
-  onSelectRestaurant,
-  restaurants,
-  userLocation,
-  loading,
-  setLoading,
-  desktopMode,
-  navigationTarget,
-  onClearNavigation,
-  onNavStateChange,
+  onRestaurantsFound, onSelectRestaurant,
+  restaurants, userLocation,
+  loading, setLoading,
+  desktopMode, navigationTarget, onClearNavigation, onNavStateChange,
+  allergens, onAddAllergen, onRemoveAllergen,
 }) {
   const mapRef          = useRef(null);
   const mapInstanceRef  = useRef(null);
@@ -228,6 +223,9 @@ export default function Map({
             onHighContrast={setHighContrast}
             navState={navState}
             onBlindAssistChange={setBlindAssistOn}
+            allergens={allergens}
+            onAddAllergen={onAddAllergen}
+            onRemoveAllergen={onRemoveAllergen}
           />
         </div>
 
