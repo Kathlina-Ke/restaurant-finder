@@ -9,7 +9,22 @@ const allergyRouter = require('./routes/allergy');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors({ origin: 'http://localhost:5173' }));
+// Allow requests from local dev and the deployed Vercel frontend
+const allowedOrigins = [
+  'http://localhost:5173',
+  process.env.CLIENT_ORIGIN, // set this on Render to your Vercel URL
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS blocked: ${origin}`));
+    }
+  },
+}));
 app.use(express.json({ limit: '10mb' }));
 
 app.use('/api/places', placesRouter);

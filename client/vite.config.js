@@ -75,6 +75,7 @@ export default defineConfig({
   ],
   server: {
     port: 5173,
+    host: true,   // 监听 0.0.0.0，局域网可访问
     proxy: {
       '/api': {
         target: 'http://localhost:3001',
