@@ -9,7 +9,7 @@
   cursor: pointer;
   text-align: left;
   transition: all 0.2s;
-  overflow: hidden;
+  /* No overflow:hidden here — allows AllergyWarning tooltip to escape the card */
   min-width: 0;
   font-family: inherit;
 }

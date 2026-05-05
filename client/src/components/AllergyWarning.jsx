@@ -10,7 +10,10 @@ function cacheKey(types, allergens) {
 }
 
 export default function AllergyWarning({ cuisineTypes = [], allergens = [] }) {
-  const [result, setResult] = useState(null);
+  const key = cacheKey(cuisineTypes, allergens);
+
+  // Initialise from cache synchronously so there's no flash when remounting
+  const [result, setResult] = useState(() => cache.get(key) ?? null);
   const [open, setOpen]     = useState(false);
   const mountedRef = useRef(true);
 
@@ -25,9 +28,9 @@ export default function AllergyWarning({ cuisineTypes = [], allergens = [] }) {
       return;
     }
 
-    const key = cacheKey(cuisineTypes, allergens);
-    if (cache.has(key)) {
-      setResult(cache.get(key));
+    const k = cacheKey(cuisineTypes, allergens);
+    if (cache.has(k)) {
+      setResult(cache.get(k));
       return;
     }
 
@@ -38,7 +41,7 @@ export default function AllergyWarning({ cuisineTypes = [], allergens = [] }) {
           cuisineTypes,
           allergens,
         });
-        cache.set(key, data);
+        cache.set(k, data);
         if (mountedRef.current) setResult(data);
       } catch {
         // silently fail — don't block the UI
